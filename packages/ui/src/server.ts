@@ -1,0 +1,1 @@
+export { getT } from './lib/getT'
