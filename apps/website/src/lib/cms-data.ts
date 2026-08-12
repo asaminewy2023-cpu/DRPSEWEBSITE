@@ -9,6 +9,7 @@ import type {
   PublicNotice,
   Short,
   SiteSetting,
+  SuccessStory,
 } from "@sevp/shared";
 
 export async function getSiteSettings(): Promise<SiteSetting | null> {
@@ -131,6 +132,27 @@ export async function getPublicNoticeById(
 ): Promise<PublicNotice | null> {
   try {
     return await cmsFetch<PublicNotice>(`/api/public-notices/${id}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function getSuccessStories(): Promise<SuccessStory[]> {
+  try {
+    return await cmsList<SuccessStory>("success-stories", {
+      sort: "-createdAt",
+      limit: 0,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getSuccessStoryById(
+  id: number,
+): Promise<SuccessStory | null> {
+  try {
+    return await cmsFetch<SuccessStory>(`/api/success-stories/${id}`);
   } catch {
     return null;
   }

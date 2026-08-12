@@ -105,6 +105,28 @@ async function main() {
     console.log(`Seeded ${seedAnnouncements.length} announcements`)
   }
 
+  if ((await payload.count({ collection: 'public-notices' })).totalDocs === 0) {
+    for (const a of seedPublicNotices) {
+      await payload.create({
+        collection: 'public-notices',
+        overrideAccess: true,
+        data: a,
+      })
+    }
+    console.log(`Seeded ${seedPublicNotices.length} public notices`)
+  }
+
+  if ((await payload.count({ collection: 'success-stories' })).totalDocs === 0) {
+    for (const s of seedSuccessStories) {
+      await payload.create({
+        collection: 'success-stories',
+        overrideAccess: true,
+        data: s,
+      })
+    }
+    console.log(`Seeded ${seedSuccessStories.length} success stories`)
+  }
+
   if ((await payload.count({ collection: 'news-categories' })).totalDocs === 0) {
     for (const c of seedNewsCategories) {
       await payload.create({
@@ -253,6 +275,66 @@ const seedAnnouncements = [
       'Significant progress has been made in the education sector reform program. New school construction projects, teacher training programs, and curriculum enhancements are being implemented across the region.\n\nAchievements include:\n- Construction of 25 new primary schools\n- Training of 500 teachers in modern pedagogy\n- Distribution of educational materials to 100,000 students\n- Establishment of 10 new libraries\n\nThe Office remains committed to improving access to quality education for all children in the region.',
     ),
     pinned: false,
+  },
+]
+
+const seedPublicNotices = [
+  {
+    title: 'Tender: Supply of Building Materials for Regional Schools',
+    date: 'August 10, 2026',
+    excerpt:
+      'The Regional Government invites qualified suppliers to bid for the supply of building materials for school construction projects across the region.',
+    content: toLexical(
+      'The Office of the Deputy Regional President, on behalf of the Regional Government, invites qualified bidders to submit sealed bids for the supply of building materials for ongoing school construction projects.\n\nThe tender covers the following lots:\n- Lot 1: Cement and aggregate (12 zones)\n- Lot 2: Steel and roofing materials\n- Lot 3: Windows, doors, and fittings\n\nEligibility:\n- Business license for the current fiscal year\n- VAT registration certificate\n- Capability statement and past performance records\n\nInterested bidders may obtain the full tender document from the Regional Procurement Office, Hawassa, upon payment of a non-refundable fee.\n\nBid submission closes on September 15, 2026 at 5:00 PM. Bids will be opened publicly on September 16, 2026 at 10:00 AM.',
+    ),
+  },
+  {
+    title: 'Vacancy Announcement: Senior Policy Analysts',
+    date: 'August 8, 2026',
+    excerpt:
+      'The Office invites qualified professionals to apply for Senior Policy Analyst positions to support regional policy formulation and program coordination.',
+    content: toLexical(
+      'The Office of the Deputy Regional President invites qualified applicants for the following positions:\n\n- Senior Policy Analyst (Policy & Planning Directorate)\n- Program Coordination Officer (Program Coordination Directorate)\n\nRequired qualifications:\n- MA/MSc in Public Policy, Economics, Development Studies, or related fields\n- 5+ years of relevant professional experience\n- Strong analytical, writing, and coordination skills\n- Proficiency in English and Amharic; knowledge of southern Ethiopian languages is an advantage\n\nInterested applicants should submit their CV, cover letter, and copies of credentials to the office address or email listed below within 15 days of this notice.\n\nThe Office is an equal opportunity employer. Women candidates are strongly encouraged to apply.',
+    ),
+  },
+  {
+    title: 'Public Notice: Water Supply Project Environmental Review',
+    date: 'August 5, 2026',
+    excerpt:
+      'Public disclosure of the environmental and social impact review for the regional rural water supply expansion program.',
+    content: toLexical(
+      'Notice is hereby given that the Regional Water, Mines and Energy Bureau has prepared an Environmental and Social Impact Review for the expansion of rural water supply systems in five zones.\n\nThe program will install 25 new water supply schemes, benefiting approximately 150,000 residents.\n\nCopies of the Environmental and Social Impact Review are available for public inspection at:\n- The Regional Water, Mines and Energy Bureau, Hawassa\n- Zonal water development offices\n\nThe public is invited to submit comments and feedback within 30 days of this notice. Comments should be addressed to the Environmental Review Coordinator.',
+    ),
+  },
+]
+
+const seedSuccessStories = [
+  {
+    title: 'From Drought to Harvest: Farmers Transform Agriculture',
+    date: 'July 22, 2026',
+    excerpt:
+      'How innovative irrigation techniques helped a community overcome drought and achieve food security.',
+    content: toLexical(
+      'In the lowlands of the region, a farming community once threatened by recurring drought has transformed its fate through innovative water management.\n\nThe community, working with the Regional Agriculture Bureau, adopted water harvesting and drip irrigation technologies that changed the agricultural landscape.\n\nKey outcomes:\n- Grain production tripled within two seasons\n- 40,000+ farmers reached with modern techniques\n- Year-round cultivation made possible\n- Reduced dependence on unreliable rainfall\n\nThe success is now being replicated in neighboring villages, turning a story of hardship into one of resilience and hope for the entire region.',
+    ),
+  },
+  {
+    title: 'Youth Employment Program Creates 5,000 Jobs',
+    date: 'July 15, 2026',
+    excerpt:
+      'A targeted youth employment program has successfully placed thousands of young people in meaningful jobs.',
+    content: toLexical(
+      'A region-wide youth employment initiative has exceeded all expectations, creating thousands of sustainable jobs for young people.\n\nThrough a mix of digital skills training, entrepreneurship support, and private sector partnerships, the program has connected youth with real opportunities.\n\nHighlights:\n- 5,000+ young people placed in jobs\n- Digital skills training through the Ethio Coders program\n- Startup and micro-enterprise grants for young entrepreneurs\n- Partnerships with businesses across the region\n\nThe initiative is now expanding to reach every zone, giving the region’s youth a stake in its growing economy.',
+    ),
+  },
+  {
+    title: 'New Healthcare Initiative Launched in Three Zones',
+    date: 'July 25, 2026',
+    excerpt:
+      'A comprehensive healthcare initiative is improving maternal and child health services across three zones.',
+    content: toLexical(
+      'A comprehensive healthcare initiative has improved access to quality care for mothers and children in three zones of the region.\n\nThe program established new health posts, trained extension workers, and deployed mobile clinics to underserved areas.\n\nKey achievements:\n- 30 new health posts established in underserved areas\n- 200 health extension workers trained\n- Mobile clinics serving remote communities\n- Essential maternal health supplies distributed\n\nCommunity health committees have been central to the initiative, sustaining services and driving health education across the region.',
+    ),
   },
 ]
 

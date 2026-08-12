@@ -393,6 +393,14 @@ export const am = {
     readMore: "ተጨማሪ ያንብቡ",
     backTo: "ወደ የህዝብ ማስታወቂያዎች ይመለሱ",
   },
+  successStories: {
+    title: "የስኬት ታሪኮች",
+    subtitle: "ከማህበረሰቦችና ከክልሉ ፕሮጀክቶች አመላካች የተጽዕኖ እና የስኬት ታሪኮች።",
+    badge: "የስኬት ታሪክ",
+    empty: "እስካሁን የስኬት ታሪክ የለም።",
+    readMore: "ተጨማሪ ያንብቡ",
+    backTo: "ወደ ስኬት ታሪኮች ይመለሱ",
+  },
   footer: {
     description: "የደቡብ ኢትዮጵያ ክልላዊ መንግሥት ምክትል ክልላዊ ፕሬዚዳንት ጽህፈት ቤት።",
     quickLinks: "ፈጣን አገናኞች",

@@ -393,6 +393,14 @@ export const en = {
     readMore: "Read More",
     backTo: "Back to Public Notices",
   },
+  successStories: {
+    title: "Success Stories",
+    subtitle: "Inspiring stories of impact and achievement from communities and projects across the region.",
+    badge: "Success Story",
+    empty: "No success stories posted yet.",
+    readMore: "Read More",
+    backTo: "Back to Success Stories",
+  },
   footer: {
     description: "Office of the Deputy Regional President of the South Ethiopia Regional State.",
     quickLinks: "Quick Links",

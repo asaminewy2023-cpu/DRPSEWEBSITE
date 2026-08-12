@@ -18,6 +18,7 @@ const badgeStyles: Record<string, string> = {
 const categoryLinks: Record<string, string> = {
   Announcements: "/announcements",
   "Public Notices": "/public-notices",
+  "Success Stories": "/success-stories",
 };
 
 const categoryStyles = [
