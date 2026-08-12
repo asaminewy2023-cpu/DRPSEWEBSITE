@@ -6,6 +6,7 @@ import type {
   Page,
   Post,
   Program,
+  PublicNotice,
   Short,
   SiteSetting,
 } from "@sevp/shared";
@@ -111,6 +112,27 @@ export async function getAnnouncements(): Promise<Announcement[]> {
     });
   } catch {
     return [];
+  }
+}
+
+export async function getPublicNotices(): Promise<PublicNotice[]> {
+  try {
+    return await cmsList<PublicNotice>("public-notices", {
+      sort: "-createdAt",
+      limit: 0,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getPublicNoticeById(
+  id: number,
+): Promise<PublicNotice | null> {
+  try {
+    return await cmsFetch<PublicNotice>(`/api/public-notices/${id}`);
+  } catch {
+    return null;
   }
 }
 

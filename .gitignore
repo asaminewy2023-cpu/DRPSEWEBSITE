@@ -44,3 +44,6 @@ next-env.d.ts
 # database
 *.db
 *.db-journal
+
+# payload local media uploads
+apps/cms/media/

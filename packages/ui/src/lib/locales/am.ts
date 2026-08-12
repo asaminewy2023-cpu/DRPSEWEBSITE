@@ -385,6 +385,14 @@ export const am = {
     readMore: "ተጨማሪ ያንብቡ",
     backToAnnouncements: "ወደ ማስታወቂያዎች ይመለሱ",
   },
+  publicNotices: {
+    title: "የህዝብ ማስታወቂያዎች",
+    subtitle: "ለዜጎችና ለባለድርሻ አካላት ጨረታዎች፣ የስራ ማስታወቂያዎች እና ሌሎች ኦፊሴላዊ መግባባቶች።",
+    badge: "የህዝብ ማስታወቂያ",
+    empty: "እስካሁን የህዝብ ማስታወቂያ የለም።",
+    readMore: "ተጨማሪ ያንብቡ",
+    backTo: "ወደ የህዝብ ማስታወቂያዎች ይመለሱ",
+  },
   footer: {
     description: "የደቡብ ኢትዮጵያ ክልላዊ መንግሥት ምክትል ክልላዊ ፕሬዚዳንት ጽህፈት ቤት።",
     quickLinks: "ፈጣን አገናኞች",

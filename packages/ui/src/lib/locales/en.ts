@@ -385,6 +385,14 @@ export const en = {
     readMore: "Read More",
     backToAnnouncements: "Back to Announcements",
   },
+  publicNotices: {
+    title: "Public Notices",
+    subtitle: "Tenders, vacancies, and other official communications for citizens and stakeholders.",
+    badge: "Public Notice",
+    empty: "No public notices posted yet.",
+    readMore: "Read More",
+    backTo: "Back to Public Notices",
+  },
   footer: {
     description: "Office of the Deputy Regional President of the South Ethiopia Regional State.",
     quickLinks: "Quick Links",
