@@ -5,6 +5,7 @@ import type {
   NewsCategory,
   Page,
   Post,
+  PressRelease,
   Program,
   PublicNotice,
   Short,
@@ -153,6 +154,27 @@ export async function getSuccessStoryById(
 ): Promise<SuccessStory | null> {
   try {
     return await cmsFetch<SuccessStory>(`/api/success-stories/${id}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function getPressReleases(): Promise<PressRelease[]> {
+  try {
+    return await cmsList<PressRelease>("press-releases", {
+      sort: "-createdAt",
+      limit: 0,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getPressReleaseById(
+  id: number,
+): Promise<PressRelease | null> {
+  try {
+    return await cmsFetch<PressRelease>(`/api/press-releases/${id}`);
   } catch {
     return null;
   }

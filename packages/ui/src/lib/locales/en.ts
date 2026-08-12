@@ -401,6 +401,14 @@ export const en = {
     readMore: "Read More",
     backTo: "Back to Success Stories",
   },
+  pressReleases: {
+    title: "Press Releases",
+    subtitle: "Press releases and media statements issued by the regional government and its offices.",
+    badge: "Press Release",
+    empty: "No press releases posted yet.",
+    readMore: "Read More",
+    backTo: "Back to Press Releases",
+  },
   footer: {
     description: "Office of the Deputy Regional President of the South Ethiopia Regional State.",
     quickLinks: "Quick Links",

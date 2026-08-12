@@ -19,6 +19,7 @@ const categoryLinks: Record<string, string> = {
   Announcements: "/announcements",
   "Public Notices": "/public-notices",
   "Success Stories": "/success-stories",
+  "Press Releases": "/press-releases",
 };
 
 const categoryStyles = [

@@ -127,6 +127,17 @@ async function main() {
     console.log(`Seeded ${seedSuccessStories.length} success stories`)
   }
 
+  if ((await payload.count({ collection: 'press-releases' })).totalDocs === 0) {
+    for (const r of seedPressReleases) {
+      await payload.create({
+        collection: 'press-releases',
+        overrideAccess: true,
+        data: r,
+      })
+    }
+    console.log(`Seeded ${seedPressReleases.length} press releases`)
+  }
+
   if ((await payload.count({ collection: 'news-categories' })).totalDocs === 0) {
     for (const c of seedNewsCategories) {
       await payload.create({
@@ -334,6 +345,36 @@ const seedSuccessStories = [
       'A comprehensive healthcare initiative is improving maternal and child health services across three zones.',
     content: toLexical(
       'A comprehensive healthcare initiative has improved access to quality care for mothers and children in three zones of the region.\n\nThe program established new health posts, trained extension workers, and deployed mobile clinics to underserved areas.\n\nKey achievements:\n- 30 new health posts established in underserved areas\n- 200 health extension workers trained\n- Mobile clinics serving remote communities\n- Essential maternal health supplies distributed\n\nCommunity health committees have been central to the initiative, sustaining services and driving health education across the region.',
+    ),
+  },
+]
+
+const seedPressReleases = [
+  {
+    title: 'Regional Development Forum Concludes with Action Plan',
+    date: 'July 28, 2026',
+    excerpt:
+      'The two-day regional development forum brought together stakeholders from all sectors to align on priority initiatives for the upcoming fiscal year.',
+    content: toLexical(
+      'The Office of the Deputy Regional President has concluded the two-day Regional Development Forum with a comprehensive action plan for the upcoming fiscal year.\n\nThe forum brought together government officials, the private sector, civil society, and development partners to align on the region\'s growth priorities.\n\nAgreed priorities include:\n- Expanding economic diversification and investment\n- Accelerating infrastructure development\n- Strengthening public service delivery\n- Enhancing social protection programs\n\nThe action plan will now be operationalized across all zones, with quarterly progress reviews to keep implementation on track.',
+    ),
+  },
+  {
+    title: 'Infrastructure Development Package Approved by Cabinet',
+    date: 'July 20, 2026',
+    excerpt:
+      'The regional cabinet has approved a comprehensive infrastructure development package for the fiscal year.',
+    content: toLexical(
+      'The Regional Cabinet has approved a comprehensive infrastructure development package spanning roads, water, energy, and public facilities for the fiscal year.\n\nThe package represents one of the largest infrastructure investments in the region\'s history.\n\nKey components:\n- 200 km of new road construction\n- 15 new water supply systems\n- 10 healthcare facility construction and renovation projects\n- 5 new schools\n\nThe projects are expected to significantly improve access to essential services and stimulate economic activity across the region.',
+    ),
+  },
+  {
+    title: 'New Education Reforms Announced for 2026-2027',
+    date: 'July 5, 2026',
+    excerpt:
+      'The regional government has announced new education reforms aimed at improving quality and access for all children.',
+    content: toLexical(
+      'The Regional Government has announced a new round of education reforms for the 2026-2027 academic year, focused on quality, access, and equity.\n\nThe reforms build on recent progress to expand enrollment and improve learning outcomes across the region.\n\nKey measures:\n- 25 new primary schools to be constructed\n- Teacher training and professional development programs\n- Distribution of learning materials to all students\n- Expansion of digital learning initiatives\nThe Office reaffirms its commitment to ensuring every child in the region has access to quality education.',
     ),
   },
 ]
