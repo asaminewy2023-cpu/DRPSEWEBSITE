@@ -110,10 +110,29 @@ export default function Footer({
             <p className="text-sm text-muted-foreground leading-relaxed">
               {about}
             </p>
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold tracking-wider uppercase mb-1">{t.footer.newsletter}</h3>
-              <NewsletterForm />
+            <h3 className="text-sm font-semibold tracking-wider uppercase mb-4 mt-8">{t.footer.socialMedia}</h3>
+            <div className="flex flex-wrap gap-3">
+              {socials.map((social) => {
+                const icon = SOCIAL_ICONS[social.label] ?? SOCIAL_ICONS.Other;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target={social.href.startsWith("http") ? "_blank" : undefined}
+                    rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-white"
+                    aria-label={social.label}
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                      <path d={icon} strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </a>
+                );
+              })}
             </div>
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+              Stay connected through our official channels for the latest updates and announcements.
+            </p>
           </div>
 
           <div>
@@ -161,42 +180,21 @@ export default function Footer({
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold tracking-wider uppercase mb-4">{t.footer.socialMedia}</h3>
-            <div className="flex flex-wrap gap-3">
-              {socials.map((social) => {
-                const icon = SOCIAL_ICONS[social.label] ?? SOCIAL_ICONS.Other;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target={social.href.startsWith("http") ? "_blank" : undefined}
-                    rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-white"
-                    aria-label={social.label}
-                  >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                      <path d={icon} strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </a>
-                );
-              })}
-            </div>
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              Stay connected through our official channels for the latest updates and announcements.
-            </p>
+            <h3 className="text-sm font-semibold tracking-wider uppercase mb-4">{t.footer.newsletter}</h3>
+            <NewsletterForm />
           </div>
         </div>
 
-        <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-primary">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t-2 border-solid border-border pt-6 sm:flex-row sm:items-center">
+          <p className="text-sm text-primary">
             &copy; {copyYear} {copyText}
           </p>
-          <p className="text-xs text-muted-foreground">{builtBy}</p>
-          <div className="flex gap-4">
-            <Link href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <p className="text-sm text-muted-foreground">{builtBy}</p>
+          <div className="text-sm">
+            <Link href="/privacy" className="mr-4 text-muted-foreground transition-colors hover:text-foreground">
               {t.footer.privacy}
             </Link>
-            <Link href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/terms" className="text-muted-foreground transition-colors hover:text-foreground">
               {t.footer.terms}
             </Link>
           </div>
