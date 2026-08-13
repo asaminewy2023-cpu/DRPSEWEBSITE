@@ -1,6 +1,8 @@
 import { cmsFetch, cmsList } from "@sevp/shared";
 import type {
   Announcement,
+  Document,
+  Event,
   GalleryItem,
   NewsCategory,
   Page,
@@ -8,68 +10,107 @@ import type {
   PressRelease,
   Program,
   PublicNotice,
+  Setting,
   Short,
   SiteSetting,
   SuccessStory,
 } from "@sevp/shared";
 
-export async function getSiteSettings(): Promise<SiteSetting | null> {
+/** ISR revalidation tiers, in seconds. Override globally via CMS_REVALIDATE_SECONDS. */
+const REVALIDATE_FAST = 30; // events, announcements
+const REVALIDATE_DEFAULT = 60; // everything else
+const REVALIDATE_STATIC = 300; // site settings, pages, programs
+
+/** Log a failed CMS lookup, then hand back a safe fallback. */
+function logCmsError(context: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`[cms-data] ${context}: ${message}`);
+}
+
+/** Fetch a single record; return null instead of crashing on failure. */
+async function fetchOrNull<T>(
+  context: string,
+  path: string,
+  options?: Parameters<typeof cmsFetch<T>>[1],
+): Promise<T | null> {
   try {
-    return await cmsFetch<SiteSetting>("/api/globals/site-settings");
-  } catch {
+    return await cmsFetch<T>(path, options);
+  } catch (error) {
+    logCmsError(context, error);
     return null;
   }
 }
 
-export async function getPages(): Promise<Page[]> {
+/** List records; return an empty array instead of crashing on failure. */
+async function listOrEmpty<T>(
+  context: string,
+  slug: string,
+  params: Record<string, unknown> = {},
+  options?: Parameters<typeof cmsFetch<T>>[1],
+): Promise<T[]> {
   try {
-    return await cmsList<Page>("pages", {
+    return await cmsList<T>(slug, params, options);
+  } catch (error) {
+    logCmsError(context, error);
+    return [];
+  }
+}
+
+export function getSiteSettings(): Promise<SiteSetting | null> {
+  return fetchOrNull("getSiteSettings", "/api/globals/site-settings", {
+    revalidate: REVALIDATE_STATIC,
+  });
+}
+
+export function getSettings(): Promise<Setting | null> {
+  return fetchOrNull("getSettings", "/api/globals/settings", {
+    revalidate: REVALIDATE_STATIC,
+  });
+}
+
+export function getPages(): Promise<Page[]> {
+  return listOrEmpty(
+    "getPages",
+    "pages",
+    {
       where: { published: { equals: true } },
       sort: "createdAt",
       limit: 0,
-    });
-  } catch {
-    return [];
-  }
+    },
+    { revalidate: REVALIDATE_STATIC },
+  );
 }
 
 export async function getPage(slug: string): Promise<Page | null> {
-  try {
-    const pages = await cmsList<Page>("pages", {
+  const pages = await listOrEmpty<Page>(
+    "getPage",
+    "pages",
+    {
       where: { slug: { equals: slug }, published: { equals: true } },
       limit: 1,
-    });
-    return pages[0] ?? null;
-  } catch {
-    return null;
-  }
+    },
+    { revalidate: REVALIDATE_STATIC },
+  );
+  return pages[0] ?? null;
 }
 
-export async function getPosts(): Promise<Post[]> {
-  try {
-    return await cmsList<Post>("posts", {
-      where: { published: { equals: true } },
-      sort: "-createdAt",
-      limit: 0,
-    });
-  } catch {
-    return [];
-  }
+export function getPosts(limit = 0): Promise<Post[]> {
+  return listOrEmpty("getPosts", "posts", {
+    where: { status: { equals: "publish" } },
+    sort: "-sticky,-createdAt",
+    limit,
+  });
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  try {
-    const posts = await cmsList<Post>("posts", {
-      where: { slug: { equals: slug } },
-      limit: 1,
-    });
-    return posts[0] ?? null;
-  } catch {
-    return null;
-  }
+  const posts = await listOrEmpty<Post>("getPostBySlug", "posts", {
+    where: { slug: { equals: slug }, status: { equals: "publish" } },
+    limit: 1,
+  });
+  return posts[0] ?? null;
 }
 
-export async function getRelatedPosts(
+export function getRelatedPosts(
   category: Post["category"],
   excludeId: number,
 ): Promise<Post[]> {
@@ -77,19 +118,15 @@ export async function getRelatedPosts(
     typeof category === "object" && category !== null
       ? category.id
       : category;
-  try {
-    return await cmsList<Post>("posts", {
-      where: {
-        published: { equals: true },
-        category: { equals: categoryId },
-        id: { not_equals: excludeId },
-      },
-      sort: "-createdAt",
-      limit: 3,
-    });
-  } catch {
-    return [];
-  }
+  return listOrEmpty("getRelatedPosts", "posts", {
+    where: {
+      status: { equals: "publish" },
+      category: { equals: categoryId },
+      id: { not_equals: excludeId },
+    },
+    sort: "-sticky,-createdAt",
+    limit: 3,
+  });
 }
 
 export function categoryLabel(category: Post["category"]): string {
@@ -106,122 +143,172 @@ export function categorySlug(category: Post["category"]): string {
   return String(category ?? "");
 }
 
-export async function getAnnouncements(): Promise<Announcement[]> {
-  try {
-    return await cmsList<Announcement>("announcements", {
+export function authorName(post: Pick<Post, "author">): string {
+  const author = post.author;
+  if (typeof author === "object" && author !== null) {
+    return author.name ?? author.email ?? "";
+  }
+  return String(author ?? "");
+}
+
+export function getAnnouncements(): Promise<Announcement[]> {
+  return listOrEmpty(
+    "getAnnouncements",
+    "announcements",
+    {
       sort: "-createdAt",
       limit: 0,
-    });
-  } catch {
-    return [];
-  }
+    },
+    { revalidate: REVALIDATE_FAST },
+  );
 }
 
-export async function getPublicNotices(): Promise<PublicNotice[]> {
-  try {
-    return await cmsList<PublicNotice>("public-notices", {
-      sort: "-createdAt",
-      limit: 0,
-    });
-  } catch {
-    return [];
-  }
+export function getPublicNotices(): Promise<PublicNotice[]> {
+  return listOrEmpty("getPublicNotices", "public-notices", {
+    sort: "-createdAt",
+    limit: 0,
+  });
 }
 
-export async function getPublicNoticeById(
-  id: number,
-): Promise<PublicNotice | null> {
-  try {
-    return await cmsFetch<PublicNotice>(`/api/public-notices/${id}`);
-  } catch {
-    return null;
-  }
+export function getPublicNoticeById(id: number): Promise<PublicNotice | null> {
+  return fetchOrNull("getPublicNoticeById", `/api/public-notices/${id}`);
 }
 
-export async function getSuccessStories(): Promise<SuccessStory[]> {
-  try {
-    return await cmsList<SuccessStory>("success-stories", {
-      sort: "-createdAt",
-      limit: 0,
-    });
-  } catch {
-    return [];
-  }
+export function getSuccessStories(): Promise<SuccessStory[]> {
+  return listOrEmpty("getSuccessStories", "success-stories", {
+    sort: "-createdAt",
+    limit: 0,
+  });
 }
 
-export async function getSuccessStoryById(
-  id: number,
-): Promise<SuccessStory | null> {
-  try {
-    return await cmsFetch<SuccessStory>(`/api/success-stories/${id}`);
-  } catch {
-    return null;
-  }
+export function getSuccessStoryById(id: number): Promise<SuccessStory | null> {
+  return fetchOrNull("getSuccessStoryById", `/api/success-stories/${id}`);
 }
 
-export async function getPressReleases(): Promise<PressRelease[]> {
-  try {
-    return await cmsList<PressRelease>("press-releases", {
-      sort: "-createdAt",
-      limit: 0,
-    });
-  } catch {
-    return [];
-  }
+export function getPressReleases(): Promise<PressRelease[]> {
+  return listOrEmpty("getPressReleases", "press-releases", {
+    sort: "-createdAt",
+    limit: 0,
+  });
 }
 
-export async function getPressReleaseById(
-  id: number,
-): Promise<PressRelease | null> {
-  try {
-    return await cmsFetch<PressRelease>(`/api/press-releases/${id}`);
-  } catch {
-    return null;
-  }
+export function getPressReleaseById(id: number): Promise<PressRelease | null> {
+  return fetchOrNull("getPressReleaseById", `/api/press-releases/${id}`);
 }
 
-export async function getAnnouncementById(
-  id: number,
-): Promise<Announcement | null> {
-  try {
-    return await cmsFetch<Announcement>(`/api/announcements/${id}`);
-  } catch {
-    return null;
-  }
+export function getAnnouncementById(id: number): Promise<Announcement | null> {
+  return fetchOrNull("getAnnouncementById", `/api/announcements/${id}`);
 }
 
-export async function getPrograms(): Promise<Program[]> {
-  try {
-    return await cmsList<Program>("programs", {
+export function getPrograms(): Promise<Program[]> {
+  return listOrEmpty(
+    "getPrograms",
+    "programs",
+    {
       sort: "sortOrder",
       limit: 0,
-    });
-  } catch {
-    return [];
-  }
+    },
+    { revalidate: REVALIDATE_STATIC },
+  );
 }
 
-export async function getGalleryItems(): Promise<GalleryItem[]> {
-  try {
-    return await cmsList<GalleryItem>("gallery-items", {
-      sort: "-createdAt",
-      limit: 0,
-    });
-  } catch {
-    return [];
-  }
+export function getDocuments(category?: string): Promise<Document[]> {
+  return listOrEmpty("getDocuments", "documents", {
+    where: {
+      published: { equals: true },
+      ...(category ? { category: { equals: category } } : {}),
+    },
+    sort: "-createdAt",
+    limit: 0,
+  });
 }
 
-export async function getShorts(): Promise<Short[]> {
-  try {
-    return await cmsList<Short>("shorts", {
-      where: { published: { equals: true } },
-      sort: "-createdAt",
-      limit: 0,
-    });
-  } catch {
-    return [];
+export function documentFileUrl(doc: Document): string | null {
+  const media = doc.file;
+  if (media && typeof media === "object" && media.url) {
+    return media.url;
   }
+  return null;
+}
+
+export function postImageUrl(
+  post: Post,
+  settings?: Pick<Setting, "listImageSize"> | null,
+): string | null {
+  const media = post.thumbnail;
+  if (!media || typeof media === "number") return null;
+  const base =
+    process.env.CMS_BASE_URL ??
+    process.env.NEXT_PUBLIC_CMS_BASE_URL ??
+    "http://localhost:3000";
+  const size = settings?.listImageSize ?? "card";
+  const path =
+    size === "original"
+      ? media.url
+      : size === "thumbnail"
+        ? media.sizes?.thumbnail?.url ??
+          media.thumbnailURL ??
+          media.sizes?.card?.url ??
+          media.url
+        : media.sizes?.card?.url ??
+          media.thumbnailURL ??
+          media.sizes?.thumbnail?.url ??
+          media.url;
+  if (!path) return null;
+  return path.startsWith("http") ? path : `${base}${path}`;
+}
+
+export function postHeroImageUrl(post: Post): string | null {
+  const media = post.thumbnail;
+  if (!media || typeof media === "number") return null;
+  const base =
+    process.env.CMS_BASE_URL ??
+    process.env.NEXT_PUBLIC_CMS_BASE_URL ??
+    "http://localhost:3000";
+  const path =
+    media.sizes?.hero?.url ??
+    media.url ??
+    media.sizes?.card?.url ??
+    media.thumbnailURL;
+  if (!path) return null;
+  return path.startsWith("http") ? path : `${base}${path}`;
+}
+
+export function postHref(
+  post: Pick<Post, "slug">,
+  settings?: Pick<Setting, "postBase" | "useTrailingSlash"> | null,
+): string {
+  const base = (settings?.postBase ?? "/blog").replace(/\/+$/, "");
+  const slug = post.slug.replace(/^\/+/, "");
+  const path = `${base}/${slug}`;
+  return settings?.useTrailingSlash ? `${path}/` : path;
+}
+
+export function getUpcomingEvents(): Promise<Event[]> {
+  return listOrEmpty(
+    "getUpcomingEvents",
+    "events",
+    {
+      sort: "createdAt",
+      limit: 0,
+    },
+    { revalidate: REVALIDATE_FAST },
+  );
+}
+
+export function getGalleryItems(): Promise<GalleryItem[]> {
+  return listOrEmpty("getGalleryItems", "gallery-items", {
+    sort: "-createdAt",
+    limit: 0,
+  });
+}
+
+export function getShorts(): Promise<Short[]> {
+  return listOrEmpty("getShorts", "shorts", {
+    where: { published: { equals: true } },
+    sort: "-createdAt",
+    limit: 0,
+  });
 }
 
 export interface ContactSubmission {
@@ -245,10 +332,12 @@ export async function submitContactMessage(
       },
     );
     if (!res.ok) {
+      logCmsError("submitContactMessage", `HTTP ${res.status}`);
       return { success: false, error: `Request failed (${res.status})` };
     }
     return { success: true };
-  } catch {
+  } catch (error) {
+    logCmsError("submitContactMessage", error);
     return { success: false, error: "Failed to send message." };
   }
 }

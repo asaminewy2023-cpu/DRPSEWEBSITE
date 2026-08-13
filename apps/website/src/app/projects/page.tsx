@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getT } from "@sevp/ui/server";
 import { CmsPage } from "../../components/CmsPage";
 
@@ -101,8 +102,9 @@ export default async function ProjectsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {t.projects.items.map((project, i) => (
-              <div
+              <Link
                 key={project.title}
+                href={`/projects/${project.slug ?? ""}`}
                 className="group overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
               >
                 <div className={`bg-gradient-to-r ${projectStyles[i].color} px-6 py-5`}>
@@ -120,7 +122,7 @@ export default async function ProjectsPage() {
                     {project.stats}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

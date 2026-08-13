@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     'news-categories': NewsCategory;
+    tags: Tag;
     pages: Page;
     posts: Post;
     announcements: Announcement;
@@ -80,6 +81,8 @@ export interface Config {
     'gallery-items': GalleryItem;
     shorts: Short;
     'contact-messages': ContactMessage;
+    documents: Document;
+    events: Event;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +93,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'news-categories': NewsCategoriesSelect<false> | NewsCategoriesSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
@@ -100,6 +104,8 @@ export interface Config {
     'gallery-items': GalleryItemsSelect<false> | GalleryItemsSelect<true>;
     shorts: ShortsSelect<false> | ShortsSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -110,9 +116,11 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    settings: Setting;
     'site-settings': SiteSetting;
   };
   globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: null;
@@ -236,6 +244,19 @@ export interface NewsCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
@@ -342,8 +363,17 @@ export interface Page {
  */
 export interface Post {
   id: number;
-  slug: string;
+  /**
+   * The main headline of the post.
+   */
   title: string;
+  /**
+   * URL-friendly version of the title.
+   */
+  slug: string;
+  /**
+   * A short summary shown on blog archives.
+   */
   excerpt: string;
   content: {
     root: {
@@ -440,18 +470,34 @@ export interface Post {
           }
       )[]
     | null;
-  category: number | NewsCategory;
-  author: string;
   /**
-   * Display date, e.g. "July 30, 2026"
+   * Main group used to sort the post.
    */
-  date: string;
-  imageUrl?: string | null;
+  category: number | NewsCategory;
+  /**
+   * The user who wrote the post.
+   */
+  author: number | User;
+  /**
+   * When the post is published or scheduled for publication.
+   */
+  publishDate?: string | null;
   /**
    * Featured image shown on the blog list and social cards.
    */
   thumbnail?: (number | null) | Media;
-  published?: boolean | null;
+  /**
+   * Publication status of the post.
+   */
+  status: 'publish' | 'draft' | 'pending' | 'trash';
+  /**
+   * Pin the post to the top of the blog page.
+   */
+  sticky?: boolean | null;
+  /**
+   * Whether comments are open or closed for this post.
+   */
+  commentStatus?: ('open' | 'closed') | null;
   createdBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
@@ -1159,6 +1205,146 @@ export interface ContactMessage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  title: string;
+  category:
+    'annual-reports' | 'policies' | 'guidelines' | 'strategic-plans' | 'tender-documents' | 'budget' | 'manuals';
+  /**
+   * Display date, e.g. "July 30, 2026"
+   */
+  date: string;
+  description?: string | null;
+  /**
+   * Upload the document file (PDF, DOC, etc.).
+   */
+  file: number | Media;
+  published?: boolean | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  type: 'Conferences' | 'Workshops' | 'Meetings' | 'Summits' | 'Seminars' | 'Public Consultations';
+  /**
+   * Display date, e.g. "Aug 15, 2026"
+   */
+  date: string;
+  location?: string | null;
+  description?: string | null;
+  /**
+   * Optional featured image for the event.
+   */
+  featuredImage?: (number | null) | Media;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Gutenberg-style blocks. Overrides rich text when present.
+   */
+  blocks?:
+    | (
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'paragraph';
+          }
+        | {
+            heading: string;
+            level?: ('h1' | 'h2' | 'h3' | 'h4') | null;
+            align?: ('left' | 'center' | 'right') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'heading';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            imageUrl?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            imageUrl: string;
+            alt?: string | null;
+            caption?: string | null;
+            round?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | {
+            kind?: ('bulleted' | 'numbered') | null;
+            items?:
+              | {
+                  content: string;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'list';
+          }
+        | {
+            quote: string;
+            attribution?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'quote';
+          }
+        | {
+            title: string;
+            body?: string | null;
+            buttonLabel?: string | null;
+            buttonUrl?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+      )[]
+    | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1192,6 +1378,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'news-categories';
         value: number | NewsCategory;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
       } | null)
     | ({
         relationTo: 'pages';
@@ -1232,6 +1422,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-messages';
         value: number | ContactMessage;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1368,6 +1566,18 @@ export interface NewsCategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
@@ -1461,8 +1671,8 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
-  slug?: T;
   title?: T;
+  slug?: T;
   excerpt?: T;
   content?: T;
   blocks?:
@@ -1537,10 +1747,11 @@ export interface PostsSelect<T extends boolean = true> {
       };
   category?: T;
   author?: T;
-  date?: T;
-  imageUrl?: T;
+  publishDate?: T;
   thumbnail?: T;
-  published?: T;
+  status?: T;
+  sticky?: T;
+  commentStatus?: T;
   createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2082,6 +2293,107 @@ export interface ContactMessagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  category?: T;
+  date?: T;
+  description?: T;
+  file?: T;
+  published?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  type?: T;
+  date?: T;
+  location?: T;
+  description?: T;
+  featuredImage?: T;
+  content?: T;
+  blocks?:
+    | T
+    | {
+        paragraph?:
+          | T
+          | {
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        heading?:
+          | T
+          | {
+              heading?: T;
+              level?: T;
+              align?: T;
+              id?: T;
+              blockName?: T;
+            };
+        hero?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              imageUrl?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              imageUrl?: T;
+              alt?: T;
+              caption?: T;
+              round?: T;
+              id?: T;
+              blockName?: T;
+            };
+        list?:
+          | T
+          | {
+              kind?: T;
+              items?:
+                | T
+                | {
+                    content?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        quote?:
+          | T
+          | {
+              quote?: T;
+              attribution?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              title?: T;
+              body?: T;
+              buttonLabel?: T;
+              buttonUrl?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -2119,6 +2431,81 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * General, writing, reading, media and permalink settings for the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  /**
+   * Short tagline shown in page headers.
+   */
+  siteTagline?: string | null;
+  /**
+   * Default language for the website.
+   */
+  defaultLanguage?: ('en' | 'am') | null;
+  /**
+   * IANA timezone used for date handling.
+   */
+  timezone?: string | null;
+  /**
+   * Default author applied to new posts when none is set.
+   */
+  defaultAuthor?: string | null;
+  /**
+   * Default category applied to new posts when none is set.
+   */
+  defaultCategory?: (number | null) | NewsCategory;
+  /**
+   * Maximum characters for auto-generated excerpts.
+   */
+  defaultExcerptLength?: number | null;
+  /**
+   * Number of articles shown on the blog and news pages.
+   */
+  postsPerPage?: number | null;
+  /**
+   * Show the Latest Articles section on the News page.
+   */
+  showLatestArticles?: boolean | null;
+  /**
+   * Show related posts at the bottom of an article.
+   */
+  showRelatedPosts?: boolean | null;
+  /**
+   * Allow visitors to comment on articles.
+   */
+  enableComments?: boolean | null;
+  /**
+   * Require admin approval before a comment is published.
+   */
+  commentModeration?: boolean | null;
+  /**
+   * Image size used on article cards and lists.
+   */
+  listImageSize?: ('card' | 'thumbnail' | 'original') | null;
+  /**
+   * Aspect ratio for card images.
+   */
+  cardAspectRatio?: ('16/9' | '4/3' | '1/1') | null;
+  /**
+   * URL prefix for articles, e.g. "/blog".
+   */
+  postBase?: string | null;
+  /**
+   * URL prefix for success stories.
+   */
+  successStoryBase?: string | null;
+  /**
+   * Append a trailing slash to permalinks.
+   */
+  useTrailingSlash?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * Site-wide branding, navigation, contact and meta settings used across the website.
@@ -2201,6 +2588,31 @@ export interface SiteSetting {
     | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  siteTagline?: T;
+  defaultLanguage?: T;
+  timezone?: T;
+  defaultAuthor?: T;
+  defaultCategory?: T;
+  defaultExcerptLength?: T;
+  postsPerPage?: T;
+  showLatestArticles?: T;
+  showRelatedPosts?: T;
+  enableComments?: T;
+  commentModeration?: T;
+  listImageSize?: T;
+  cardAspectRatio?: T;
+  postBase?: T;
+  successStoryBase?: T;
+  useTrailingSlash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

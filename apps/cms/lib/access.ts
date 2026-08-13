@@ -80,3 +80,20 @@ export const restrictPublish: CollectionBeforeChangeHook = ({ data, req }) => {
   }
   return data
 }
+
+export const restrictStatus: CollectionBeforeChangeHook = ({ data, req, operation }) => {
+  if (operation === 'create') {
+    return { ...data, status: data.status || 'draft' }
+  }
+  if (!isRole(req.user, PUBLISHER_ROLES)) {
+    return { ...data, status: data.status === 'publish' ? 'pending' : data.status || 'draft' }
+  }
+  return data
+}
+
+export const setAuthor: CollectionBeforeChangeHook = ({ data, req, operation }) => {
+  if (operation === 'create' && !data.author && req.user) {
+    return { ...data, author: (req.user as { id?: number }).id }
+  }
+  return data
+}

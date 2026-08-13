@@ -5,9 +5,20 @@ import { Footer } from "@sevp/ui";
 import { AccessibilityToolbar } from "@sevp/ui";
 import { LanguageProvider } from "@sevp/ui";
 import { AccessibilityProvider } from "@sevp/ui";
+import { CMS_BASE_URL } from "@sevp/shared";
 import type { SiteSetting } from "@sevp/shared";
 import { getSiteSettings } from "@/lib/cms-data";
+import { Analytics } from "@/components/Analytics";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import "./globals.css";
+
+const cmsOrigin = (() => {
+  try {
+    return new URL(CMS_BASE_URL).origin;
+  } catch {
+    return CMS_BASE_URL;
+  }
+})();
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -20,6 +31,8 @@ const openSans = Open_Sans({
   subsets: ["latin"],
 });
 
+const gscVerification = process.env.NEXT_PUBLIC_GSC_VERIFICATION;
+
 export const metadata: Metadata = {
   title: {
     default: "Deputy Regional President of the South Ethiopia Regional State",
@@ -27,6 +40,13 @@ export const metadata: Metadata = {
   },
   description:
     "Official website of the Office of the Deputy Regional President of the South Ethiopia Regional State. Learn about our leadership, programs, and initiatives.",
+  ...(gscVerification
+    ? {
+        verification: {
+          google: gscVerification,
+        },
+      }
+    : {}),
 };
 
 function logoUrl(settings: SiteSetting | null): string | null {
@@ -49,6 +69,10 @@ export default async function RootLayout({
       lang="en"
       className={`${poppins.variable} ${openSans.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preconnect" href={cmsOrigin} />
+        <link rel="preconnect" href={cmsOrigin} crossOrigin="anonymous" />
+      </head>
       <body className="min-h-full flex flex-col">
         <a href="#main-content" className="skip-link">
           Skip to main content
@@ -73,8 +97,10 @@ export default async function RootLayout({
               socialLinks={settings?.socialLinks}
             />
             <AccessibilityToolbar />
+            <CookieConsentBanner />
           </LanguageProvider>
         </AccessibilityProvider>
+        <Analytics />
       </body>
     </html>
   );

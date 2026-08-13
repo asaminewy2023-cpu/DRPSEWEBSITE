@@ -8,7 +8,8 @@ import {
   isOneOf,
   or,
   ownsCreatedBy,
-  restrictPublish,
+  restrictStatus,
+  setAuthor,
   setCreatedBy,
 } from '../lib/access'
 
@@ -16,12 +17,12 @@ export const Posts: CollectionConfig = {
   slug: 'posts',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', 'author', 'published', 'updatedAt'],
+    defaultColumns: ['title', 'category', 'status', 'sticky', 'author', 'updatedAt'],
   },
   access: {
     read: ({ req }) => {
       if (req.user) return true
-      return { published: { equals: true } }
+      return { status: { equals: 'publish' } }
     },
     create: isAuthenticated,
     update: or(
@@ -34,26 +35,35 @@ export const Posts: CollectionConfig = {
     ),
   },
   hooks: {
-    beforeChange: [setCreatedBy, restrictPublish],
+    beforeChange: [setCreatedBy, setAuthor, restrictStatus],
   },
   fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      admin: {
+        description: 'The main headline of the post.',
+      },
+    },
     {
       name: 'slug',
       type: 'text',
       required: true,
       unique: true,
       index: true,
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'title',
-      type: 'text',
-      required: true,
+      admin: {
+        position: 'sidebar',
+        description: 'URL-friendly version of the title.',
+      },
     },
     {
       name: 'excerpt',
       type: 'textarea',
       required: true,
+      admin: {
+        description: 'A short summary shown on blog archives.',
+      },
     },
     {
       name: 'content',
@@ -73,23 +83,27 @@ export const Posts: CollectionConfig = {
       type: 'relationship',
       relationTo: 'news-categories',
       required: true,
-    },
-    {
-      name: 'author',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'date',
-      type: 'text',
-      required: true,
       admin: {
-        description: 'Display date, e.g. "July 30, 2026"',
+        description: 'Main group used to sort the post.',
       },
     },
     {
-      name: 'imageUrl',
-      type: 'text',
+      name: 'author',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+      admin: {
+        position: 'sidebar',
+        description: 'The user who wrote the post.',
+      },
+    },
+    {
+      name: 'publishDate',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        description: 'When the post is published or scheduled for publication.',
+      },
     },
     {
       name: 'thumbnail',
@@ -100,10 +114,42 @@ export const Posts: CollectionConfig = {
       },
     },
     {
-      name: 'published',
+      name: 'status',
+      type: 'select',
+      defaultValue: 'draft',
+      required: true,
+      options: [
+        { label: 'Publish', value: 'publish' },
+        { label: 'Draft', value: 'draft' },
+        { label: 'Pending Review', value: 'pending' },
+        { label: 'Trash', value: 'trash' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Publication status of the post.',
+      },
+    },
+    {
+      name: 'sticky',
       type: 'checkbox',
       defaultValue: false,
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        description: 'Pin the post to the top of the blog page.',
+      },
+    },
+    {
+      name: 'commentStatus',
+      type: 'select',
+      defaultValue: 'closed',
+      options: [
+        { label: 'Open', value: 'open' },
+        { label: 'Closed', value: 'closed' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Whether comments are open or closed for this post.',
+      },
     },
     createdByField,
   ],

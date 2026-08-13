@@ -42,6 +42,8 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 button,
@@ -50,12 +52,16 @@ input[type="submit"],
 input[type="button"] {
   font-family: var(--font-heading), sans-serif;
   font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 a[class*="bg-primary"],
 a[class*="bg-accent"] {
   font-family: var(--font-heading), sans-serif;
   font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 html {

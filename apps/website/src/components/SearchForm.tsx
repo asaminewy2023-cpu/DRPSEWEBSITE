@@ -2,14 +2,23 @@
 
 import { useState } from "react";
 import { useLanguage } from "@sevp/ui";
+import { trackSearch } from "@/lib/analytics";
 
 export function SearchForm() {
   const [advanced, setAdvanced] = useState(false);
   const [query, setQuery] = useState("");
   const { t } = useLanguage();
 
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    trackSearch(query);
+  };
+
   return (
-    <div className="rounded-2xl border border-border bg-muted p-6 sm:p-8">
+    <form
+      onSubmit={submitSearch}
+      className="rounded-2xl border border-border bg-muted p-6 sm:p-8"
+    >
       <div className="space-y-4">
         <div className="relative">
           <svg className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -34,7 +43,7 @@ export function SearchForm() {
             </svg>
             {advanced ? t.search.hideAdvanced : t.search.advanced}
           </button>
-          <button className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90">
+          <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90">
             {t.nav.search}
           </button>
         </div>
@@ -63,6 +72,6 @@ export function SearchForm() {
           </div>
         )}
       </div>
-    </div>
+    </form>
   );
 }

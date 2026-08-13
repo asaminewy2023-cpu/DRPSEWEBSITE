@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getT } from "@sevp/ui/server";
 import { CmsPage } from "../../components/CmsPage";
 
@@ -85,7 +86,11 @@ export default async function DocumentsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {t.documents.categoriesList.map((cat, i) => (
-              <div key={cat.title} className="group overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+              <Link
+                key={cat.title}
+                href={`/documents/${cat.slug ?? ""}`}
+                className="group overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+              >
                 <div className={`bg-gradient-to-r ${categoryStyles[i].color} px-6 py-5`}>
                   <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 text-white">
                     {categoryStyles[i].icon}
@@ -96,7 +101,7 @@ export default async function DocumentsPage() {
                   <p className="mt-1 text-xs text-muted-foreground">{cat.description}</p>
                   <p className="mt-3 text-xs font-medium text-primary">{cat.count}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

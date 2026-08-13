@@ -1,5 +1,7 @@
 import { Announcements } from './Announcements'
 import { ContactMessages } from './ContactMessages'
+import { Documents } from './Documents'
+import { Events } from './Events'
 import { GalleryItems } from './GalleryItems'
 import { Media } from './Media'
 import { NewsCategories } from './NewsCategories'
@@ -10,12 +12,14 @@ import { Programs } from './Programs'
 import { PublicNotices } from './PublicNotices'
 import { Shorts } from './Shorts'
 import { SuccessStories } from './SuccessStories'
+import { Tags } from './Tags'
 import { Users } from './Users'
 
 export const collections = [
   Users,
   Media,
   NewsCategories,
+  Tags,
   Pages,
   Posts,
   Announcements,
@@ -26,4 +30,6 @@ export const collections = [
   GalleryItems,
   Shorts,
   ContactMessages,
+  Documents,
+  Events,
 ]

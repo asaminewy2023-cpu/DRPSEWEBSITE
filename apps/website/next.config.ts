@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 31536000,
     deviceSizes: [320, 480, 640, 768, 1024, 1280, 1536],
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [...cmsRemotePatterns()],
   },
   async headers() {
