@@ -8,6 +8,8 @@ import * as migration_20260811_193421 from './20260811_193421';
 import * as migration_20260812_111035 from './20260812_111035';
 import * as migration_20260812_182927 from './20260812_182927';
 import * as migration_20260813_103759_add_settings_global from './20260813_103759_add_settings_global';
+import * as migration_20260813_114500_add_comments from './20260813_114500_add_comments';
+import * as migration_20260813_115000_add_subscribers from './20260813_115000_add_subscribers';
 
 export const migrations = [
   {
@@ -59,5 +61,15 @@ export const migrations = [
     up: migration_20260813_103759_add_settings_global.up,
     down: migration_20260813_103759_add_settings_global.down,
     name: '20260813_103759_add_settings_global'
+  },
+  {
+    up: migration_20260813_114500_add_comments.up,
+    down: migration_20260813_114500_add_comments.down,
+    name: '20260813_114500_add_comments'
+  },
+  {
+    up: migration_20260813_115000_add_subscribers.up,
+    down: migration_20260813_115000_add_subscribers.down,
+    name: '20260813_115000_add_subscribers'
   },
 ];

@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+
+# ---- base: install all workspace deps ----
+FROM node:22-alpine AS base
+RUN corepack enable && corepack prepare pnpm@11.18.0 --activate
+WORKDIR /app
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY patches ./patches
+COPY packages ./packages
+COPY apps ./apps
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# ---- builder: build the CMS ----
+FROM base AS cms-builder
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+# Payload needs a DATABASE_URL + SECRET even at build time for typegen/prerender
+ARG DATABASE_URL=postgres://postgres:postgres@postgres:5432/Sevp
+ARG PAYLOAD_SECRET=docker-build-secret
+ENV DATABASE_URL=$DATABASE_URL
+ENV PAYLOAD_SECRET=$PAYLOAD_SECRET
+RUN pnpm --filter @sevp/cms build
+
+# ---- CMS runtime ----
+FROM node:22-alpine AS cms
+RUN corepack enable && corepack prepare pnpm@11.18.0 --activate
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY --from=cms-builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
+COPY --from=cms-builder /app/node_modules ./node_modules
+COPY --from=cms-builder /app/packages ./packages
+COPY --from=cms-builder /app/apps/cms/.next ./apps/cms/.next
+COPY --from=cms-builder /app/apps/cms/app ./apps/cms/app
+COPY --from=cms-builder /app/apps/cms/package.json ./apps/cms/package.json
+COPY --from=cms-builder /app/apps/cms/next.config.ts ./apps/cms/next.config.ts
+COPY --from=cms-builder /app/apps/cms/payload.config.ts ./apps/cms/payload.config.ts
+COPY --from=cms-builder /app/apps/cms/collections ./apps/cms/collections
+COPY --from=cms-builder /app/apps/cms/globals ./apps/cms/globals
+COPY --from=cms-builder /app/apps/cms/blocks ./apps/cms/blocks
+COPY --from=cms-builder /app/apps/cms/lib ./apps/cms/lib
+COPY --from=cms-builder /app/apps/cms/migrations ./apps/cms/migrations
+COPY --from=cms-builder /app/apps/cms/seed.ts ./apps/cms/seed.ts
+WORKDIR /app/apps/cms
+EXPOSE 3000
+CMD ["pnpm", "start"]

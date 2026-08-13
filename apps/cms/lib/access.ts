@@ -75,6 +75,8 @@ export const setCreatedBy: CollectionBeforeChangeHook = ({ data, req, operation 
 }
 
 export const restrictPublish: CollectionBeforeChangeHook = ({ data, req }) => {
+  // Server-side writes without a user (seeds, scripts) keep the provided value.
+  if (!req.user) return data
   if (!isRole(req.user, PUBLISHER_ROLES)) {
     return { ...data, published: false }
   }

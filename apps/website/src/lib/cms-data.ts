@@ -1,6 +1,7 @@
 import { cmsFetch, cmsList } from "@sevp/shared";
 import type {
   Announcement,
+  Comment,
   Document,
   Event,
   GalleryItem,
@@ -218,6 +219,7 @@ export function getDocuments(category?: string): Promise<Document[]> {
       published: { equals: true },
       ...(category ? { category: { equals: category } } : {}),
     },
+    depth: 1,
     sort: "-createdAt",
     limit: 0,
   });
@@ -225,10 +227,12 @@ export function getDocuments(category?: string): Promise<Document[]> {
 
 export function documentFileUrl(doc: Document): string | null {
   const media = doc.file;
-  if (media && typeof media === "object" && media.url) {
-    return media.url;
-  }
-  return null;
+  if (!media || typeof media !== "object" || !media.url) return null;
+  const base =
+    process.env.CMS_BASE_URL ??
+    process.env.NEXT_PUBLIC_CMS_BASE_URL ??
+    "http://localhost:3000";
+  return media.url.startsWith("http") ? media.url : `${base}${media.url}`;
 }
 
 export function postImageUrl(
@@ -318,6 +322,105 @@ export interface ContactSubmission {
   message: string;
 }
 
+export interface SearchResult {
+  title: string;
+  type: string;
+  href: string;
+  excerpt?: string;
+}
+
+function contains(term: string) {
+  return { contains: term };
+}
+
+/**
+ * Search the CMS across multiple collections for a query term.
+ * Results are unified into a flat SearchResult[] with type labels + links.
+ */
+export async function searchCms(term: string): Promise<SearchResult[]> {
+  const q = term.trim();
+  if (!q) return [];
+
+  const [, posts, announcements, pressReleases, programs, publicNotices] =
+    await Promise.all([
+      Promise.resolve(null),
+      listOrEmpty<Post>("search posts", "posts", {
+        where: {
+          status: { equals: "publish" },
+          or: [
+            { title: contains(q) },
+            { excerpt: contains(q) },
+          ],
+        },
+        sort: "-sticky,-createdAt",
+        limit: 10,
+      }),
+      listOrEmpty<Announcement>("search announcements", "announcements", {
+        where: {
+          or: [{ title: contains(q) }, { excerpt: contains(q) }],
+        },
+        sort: "-createdAt",
+        limit: 10,
+      }),
+      listOrEmpty<PressRelease>("search press-releases", "press-releases", {
+        where: {
+          or: [{ title: contains(q) }, { excerpt: contains(q) }],
+        },
+        sort: "-createdAt",
+        limit: 10,
+      }),
+      listOrEmpty<Program>("search programs", "programs", {
+        where: {
+          or: [{ title: contains(q) }, { description: contains(q) }],
+        },
+        sort: "sortOrder",
+        limit: 10,
+      }),
+      listOrEmpty<PublicNotice>("search public-notices", "public-notices", {
+        where: {
+          or: [{ title: contains(q) }, { excerpt: contains(q) }],
+        },
+        sort: "-createdAt",
+        limit: 10,
+      }),
+    ]);
+
+  const results: SearchResult[] = [
+    ...posts.map((post) => ({
+      title: post.title,
+      type: "Post",
+      href: `/blog/${post.slug}`,
+      excerpt: post.excerpt,
+    })),
+    ...announcements.map((a) => ({
+      title: a.title,
+      type: "Announcement",
+      href: `/announcements/${a.id}`,
+      excerpt: a.excerpt,
+    })),
+    ...pressReleases.map((p) => ({
+      title: p.title,
+      type: "Press Release",
+      href: `/press-releases/${p.id}`,
+      excerpt: p.excerpt,
+    })),
+    ...programs.map((p) => ({
+      title: p.title,
+      type: "Program",
+      href: `/programs`,
+      excerpt: p.description,
+    })),
+    ...publicNotices.map((n) => ({
+      title: n.title,
+      type: "Public Notice",
+      href: `/public-notices/${n.id}`,
+      excerpt: n.excerpt,
+    })),
+  ];
+
+  return results;
+}
+
 export async function submitContactMessage(
   data: ContactSubmission,
 ): Promise<{ success: boolean; error?: string }> {
@@ -339,5 +442,40 @@ export async function submitContactMessage(
   } catch (error) {
     logCmsError("submitContactMessage", error);
     return { success: false, error: "Failed to send message." };
+  }
+}
+
+export async function getPostComments(postId: number): Promise<Comment[]> {
+  return listOrEmpty("getPostComments", "comments", {
+    where: { post: { equals: postId } },
+    depth: 1,
+    sort: "createdAt",
+  });
+}
+
+export async function submitComment(data: {
+  post: number;
+  name: string;
+  email?: string;
+  content: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(
+      `${process.env.CMS_BASE_URL ?? process.env.NEXT_PUBLIC_CMS_BASE_URL ?? "http://localhost:3000"}/api/comments`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        cache: "no-store",
+      },
+    );
+    if (!res.ok) {
+      logCmsError("submitComment", `HTTP ${res.status}`);
+      return { success: false, error: `Request failed (${res.status})` };
+    }
+    return { success: true };
+  } catch (error) {
+    logCmsError("submitComment", error);
+    return { success: false, error: "Failed to submit comment." };
   }
 }

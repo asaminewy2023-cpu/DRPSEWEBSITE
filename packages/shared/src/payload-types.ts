@@ -80,6 +80,8 @@ export interface Config {
     programs: Program;
     'gallery-items': GalleryItem;
     shorts: Short;
+    subscribers: Subscriber;
+    comments: Comment;
     'contact-messages': ContactMessage;
     documents: Document;
     events: Event;
@@ -103,6 +105,8 @@ export interface Config {
     programs: ProgramsSelect<false> | ProgramsSelect<true>;
     'gallery-items': GalleryItemsSelect<false> | GalleryItemsSelect<true>;
     shorts: ShortsSelect<false> | ShortsSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
@@ -1190,6 +1194,44 @@ export interface Short {
   createdAt: string;
 }
 /**
+ * Email addresses subscribed to the site newsletter.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers".
+ */
+export interface Subscriber {
+  id: number;
+  email: string;
+  /**
+   * Optional subscriber name.
+   */
+  name?: string | null;
+  /**
+   * Set to false for unsubscribed emails.
+   */
+  subscribed?: boolean | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  post: number | Post;
+  name: string;
+  email?: string | null;
+  content: string;
+  /**
+   * Publicly visible comments must be approved.
+   */
+  approved?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-messages".
  */
@@ -1418,6 +1460,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'shorts';
         value: number | Short;
+      } | null)
+    | ({
+        relationTo: 'subscribers';
+        value: number | Subscriber;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
       } | null)
     | ({
         relationTo: 'contact-messages';
@@ -2275,6 +2325,31 @@ export interface ShortsSelect<T extends boolean = true> {
       };
   published?: T;
   createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers_select".
+ */
+export interface SubscribersSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  subscribed?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  post?: T;
+  name?: T;
+  email?: T;
+  content?: T;
+  approved?: T;
   updatedAt?: T;
   createdAt?: T;
 }

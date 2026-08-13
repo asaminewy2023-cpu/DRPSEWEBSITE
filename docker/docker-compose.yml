@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-Sevp}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-Sevp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Do NOT expose 5432 to the host in production. Remove ports block for hardened deploy.
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  cms:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cms
+      args:
+        DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-Sevp}
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-Sevp}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@southethiopia.gov.et}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-South Ethiopia Regional State}
+      CONTACT_TO_EMAIL: ${CONTACT_TO_EMAIL:-}
+      WEBSITE_URL: ${WEBSITE_URL:-http://localhost}
+      NEXT_PUBLIC_SERVER_URL: ${WEBSITE_URL:-http://localhost}
+    volumes:
+      - media:/app/apps/cms/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  website:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.website
+      args:
+        NEXT_PUBLIC_CMS_BASE_URL: ${CMS_PUBLIC_BASE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_GA4_ID: ${NEXT_PUBLIC_GA4_ID:-}
+        NEXT_PUBLIC_GSC_VERIFICATION: ${NEXT_PUBLIC_GSC_VERIFICATION:-}
+    restart: unless-stopped
+    environment:
+      CMS_BASE_URL: http://cms:3000
+      NEXT_PUBLIC_CMS_BASE_URL: ${CMS_PUBLIC_BASE_URL:-http://localhost:3000}
+      CMS_REVALIDATE_SECONDS: ${CMS_REVALIDATE_SECONDS:-60}
+      NEXT_PUBLIC_GA4_ID: ${NEXT_PUBLIC_GA4_ID:-}
+      NEXT_PUBLIC_GSC_VERIFICATION: ${NEXT_PUBLIC_GSC_VERIFICATION:-}
+    depends_on:
+      - cms
+    ports:
+      - "127.0.0.1:3001:3001"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - website
+      - cms
+
+volumes:
+  pgdata:
+  media:

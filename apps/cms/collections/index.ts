@@ -1,4 +1,5 @@
 import { Announcements } from './Announcements'
+import { Comments } from './Comments'
 import { ContactMessages } from './ContactMessages'
 import { Documents } from './Documents'
 import { Events } from './Events'
@@ -11,11 +12,14 @@ import { PressReleases } from './PressReleases'
 import { Programs } from './Programs'
 import { PublicNotices } from './PublicNotices'
 import { Shorts } from './Shorts'
+import { Subscribers } from './Subscribers'
 import { SuccessStories } from './SuccessStories'
 import { Tags } from './Tags'
 import { Users } from './Users'
 
-export const collections = [
+import { revalidateAfterChange } from '../lib/revalidate'
+
+const baseCollections = [
   Users,
   Media,
   NewsCategories,
@@ -29,7 +33,22 @@ export const collections = [
   Programs,
   GalleryItems,
   Shorts,
+  Subscribers,
+  Comments,
   ContactMessages,
   Documents,
   Events,
 ]
+
+const IGNORE_REVALIDATE = new Set(['users', 'media'])
+
+export const collections = baseCollections.map((collection) => {
+  if (IGNORE_REVALIDATE.has(collection.slug)) return collection
+  return {
+    ...collection,
+    hooks: {
+      ...collection.hooks,
+      afterChange: [...(collection.hooks?.afterChange ?? []), revalidateAfterChange],
+    },
+  }
+})

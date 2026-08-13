@@ -729,21 +729,21 @@ function createSampleFile(title: string) {
 const seedUsers = [
   {
     email: 'admin@southethiopia.gov.et',
-    password: 'password123',
+    password: process.env.SEED_ADMIN_PASSWORD || 'password123',
     name: 'Super Admin',
     role: 'super_admin',
     active: true,
   },
   {
     email: 'editor@southethiopia.gov.et',
-    password: 'password123',
+    password: process.env.SEED_EDITOR_PASSWORD || 'password123',
     name: 'Editor User',
     role: 'editor',
     active: true,
   },
   {
     email: 'reporter@southethiopia.gov.et',
-    password: 'password123',
+    password: process.env.SEED_REPORTER_PASSWORD || 'password123',
     name: 'Reporter User',
     role: 'reporter',
     active: true,

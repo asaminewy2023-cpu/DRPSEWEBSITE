@@ -334,3 +334,14 @@ Project documentation:
 ### `.agents/skills/`
 AI-assistant skill packs (Prisma CLI/API/database/compute docs). Tooling for the
 dev environment, not application code.
+
+
+
+
+
+
+
+Role			Email				Password
+Super Admin		admin@southethiopia.gov.et	password123
+Editor			editor@southethiopia.gov.et	password123
+Reporter		reporter@southethiopia.gov.et	password123

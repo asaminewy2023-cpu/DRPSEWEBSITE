@@ -23,13 +23,16 @@ export interface CmsFetchOptions {
   revalidate?: number | false
 }
 
+/** Tag applied to every CMS fetch so on-demand revalidation can purge them. */
+export const CMS_CACHE_TAG = 'cms'
+
 export async function cmsFetch<T>(
   path: string,
   options: CmsFetchOptions = {},
 ): Promise<T> {
   const revalidate = options.revalidate ?? DEFAULT_REVALIDATE
   const res = await fetch(`${CMS_BASE_URL}${path}`, {
-    next: revalidate === false ? { revalidate: 0 } : { revalidate },
+    next: revalidate === false ? { revalidate: 0, tags: [CMS_CACHE_TAG] } : { revalidate, tags: [CMS_CACHE_TAG] },
   } as RequestInit)
   if (!res.ok) {
     throw new Error(`CMS request to ${path} failed: ${res.status}`)

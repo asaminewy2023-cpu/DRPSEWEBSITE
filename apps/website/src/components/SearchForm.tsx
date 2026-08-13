@@ -1,17 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@sevp/ui";
 import { trackSearch } from "@/lib/analytics";
 
-export function SearchForm() {
+export function SearchForm({ initialQuery = "" }: { initialQuery?: string }) {
   const [advanced, setAdvanced] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const { t } = useLanguage();
+  const router = useRouter();
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    trackSearch(query);
+    const term = query.trim();
+    if (!term) return;
+    trackSearch(term);
+    router.push(`/search?q=${encodeURIComponent(term)}`);
   };
 
   return (

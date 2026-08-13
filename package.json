@@ -17,7 +17,9 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "migrate:cms": "pnpm --filter @sevp/cms payload:migrate",
     "migrate:cms:create": "pnpm --filter @sevp/cms payload:migrate:create",
-    "types:cms": "pnpm --filter @sevp/cms payload:generate:types"
+    "types:cms": "pnpm --filter @sevp/cms payload:generate:types",
+    "monitor": "bash scripts/monitor.sh",
+    "backup": "bash scripts/backup.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

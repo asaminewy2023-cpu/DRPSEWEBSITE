@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLanguage } from "../lib/LanguageContext"
+import { NewsletterForm } from "./NewsletterForm"
 
 export type FooterSocialLink = { label: string; url: string };
 
@@ -109,6 +110,10 @@ export default function Footer({
             <p className="text-sm text-muted-foreground leading-relaxed">
               {about}
             </p>
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold tracking-wider uppercase mb-1">{t.footer.newsletter}</h3>
+              <NewsletterForm />
+            </div>
           </div>
 
           <div>

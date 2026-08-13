@@ -7,6 +7,7 @@ import {
   authorName,
   categoryLabel,
   getPostBySlug,
+  getPostComments,
   getRelatedPosts,
   getSettings,
   postHeroImageUrl,
@@ -15,6 +16,7 @@ import {
 } from "../../../lib/cms-data";
 import { BlocksRenderer } from "../../../components/BlocksRenderer";
 import { RichText } from "../../../components/RichText";
+import { CommentSection } from "../../../components/CommentSection";
 
 const badgeStyles: Record<string, string> = {
   Announcements: "bg-green-100 text-green-700",
@@ -42,6 +44,9 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   }
 
   const related = await getRelatedPosts(post.category, post.id);
+
+  const commentsOpen = post.commentStatus === "open";
+  const comments = commentsOpen ? await getPostComments(post.id) : [];
 
   const badge = badgeStyles[categoryLabel(post.category)] || "bg-zinc-100 text-zinc-700";
 
@@ -110,6 +115,16 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           })()}
         </div>
       </section>
+
+      {commentsOpen && (
+        <section className="py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl">
+              <CommentSection postId={post.id} comments={comments} />
+            </div>
+          </div>
+        </section>
+      )}
 
       {related.length > 0 && settings?.showRelatedPosts !== false && (
         <section className="bg-muted py-16">
